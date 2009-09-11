@@ -1,4 +1,10 @@
 use strict;
-use Test::More tests => 1;
+use warnings;
+use 5.010;
+use PerlX::Range;
 
-BEGIN { use_ok 'PerlX::Range' }
+use Test::More;
+
+diag "compile.t";
+pass;
+done_testing;
