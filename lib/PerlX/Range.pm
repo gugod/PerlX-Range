@@ -76,6 +76,23 @@ sub new {
     return bless {%args}, $class;
 }
 
+sub each {
+    my $cb = pop;
+    my $self = shift;
+
+    my $current = $self->{current} ||= $self->{start};
+    if ($current > $self->{end}) {
+        delete $self->{current};
+        return;
+    }
+    while($current <= $self->{end}) {
+        local $_ = $current;
+        $cb->($self, $_);
+        $current++;
+    }
+}
+
+
 1;
 __END__
 
