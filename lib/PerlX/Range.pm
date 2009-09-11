@@ -87,7 +87,8 @@ sub each {
     }
     while($current <= $self->{end}) {
         local $_ = $current;
-        $cb->($self, $_);
+        my $ret = $cb->($self, $_);
+        last if (defined($ret) && !$ret);
         $current++;
     }
 }
