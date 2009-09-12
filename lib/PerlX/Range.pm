@@ -14,7 +14,7 @@ use B::OPCheck ();
 sub __const_check {
     my $op = shift;
     my $offset = Devel::Declare::get_linestr_offset;
-    # $offset += Devel::Declare::toke_skipspace($offset);
+    $offset += Devel::Declare::toke_skipspace($offset);
     my $linestr = Devel::Declare::get_linestr;
     my $code = substr($linestr, $offset);
 
@@ -43,12 +43,10 @@ sub __const_check {
             $pnode = $pnode->parent;
         }
 
-        $code .= $start->content . "+" . "PerlX::Range->new(end => @{[ $end->content ]})";
+        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new(last => @{[ $end->content ]})";
     }
 
-    # say $linestr;
     substr($linestr, $offset, length($original_code) - 2 ) = $code;
-    # say $linestr;
     Devel::Declare::set_linestr($linestr);
 };
 
@@ -63,12 +61,12 @@ sub import {
 use overload
     '+' => sub {
         my $self = shift;
-        $self->{start} = $_[0];
+        $self->{first} = $_[0];
         return $self;
     },
     '""' => sub {
         my $self = shift;
-        return $self->{start} . ".." . $self->{end};
+        return $self->{first} . ".." . $self->{last};
     };
 
 sub new {
@@ -76,16 +74,28 @@ sub new {
     return bless {%args}, $class;
 }
 
+sub items {
+    $_[0]->{last} - $_[0]->{first} + 1
+}
+
+sub first {
+    $_[0]->{first}
+}
+
+sub last {
+    $_[0]->{last}
+}
+
 sub each {
     my $cb = pop;
     my $self = shift;
 
-    my $current = $self->{current} ||= $self->{start};
-    if ($current > $self->{end}) {
+    my $current = $self->{current} ||= $self->{first};
+    if ($current > $self->{last}) {
         delete $self->{current};
         return;
     }
-    while($current <= $self->{end}) {
+    while($current <= $self->{last}) {
         local $_ = $current;
         my $ret = $cb->($self, $_);
         last if (defined($ret) && !$ret);

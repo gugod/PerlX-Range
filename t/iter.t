@@ -11,7 +11,7 @@ my $a = 1..1000;
 my $b = 1;
 $a->each {
     my ($self, $x) = @_;
-    return 0 if $b == 5; # a defined false value.
+    return 0 if $b == 5;        # a defined false value.
 
     is($self, $a);
     is($_, $b);
