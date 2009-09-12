@@ -43,7 +43,10 @@ sub __const_check {
             $pnode = $pnode->parent;
         }
 
-        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new(last => @{[ $end->content ]})";
+        my $end_content = $end->content;
+        $end_content = '"*"' if $end_content eq '*';
+
+        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new(last => $end_content)";
     }
 
     substr($linestr, $offset, length($original_code) - 2 ) = $code;
@@ -105,12 +108,9 @@ sub each {
     my $cb = pop;
     my $self = shift;
 
-    my $current = $self->{current} ||= $self->{first};
-    if ($current > $self->{last}) {
-        delete $self->{current};
-        return;
-    }
-    while($current <= $self->{last}) {
+    my $current = $self->{first};
+
+    while('*' eq $self->max || $current <= $self->max) {
         local $_ = $current;
         my $ret = $cb->($self, $_);
         last if (defined($ret) && !$ret);
