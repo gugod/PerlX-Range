@@ -1,5 +1,11 @@
 Revision history for Perl extension PerlX::Range
 
+0.03
+- add :by() syntax
+- allow * as the end of the range
+- range object can now deref to an array
+- and it has a to_a method that returns a list/array
+
 0.02
 - Implement methods
 - documentation
