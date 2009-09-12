@@ -108,8 +108,7 @@ sub each {
     my $cb = pop;
     my $self = shift;
 
-    my $current = $self->{first};
-
+    my $current = $self->min;
     while('*' eq $self->max || $current <= $self->max) {
         local $_ = $current;
         my $ret = $cb->($self, $_);
