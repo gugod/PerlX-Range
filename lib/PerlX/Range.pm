@@ -183,6 +183,20 @@ PerlX::Range is an attemp to implement make range operator lazy. When you say:
 
 This `$a` variable is then now a C<PerlX::Range> object.
 
+At this point the begin of range can only be a constant, and better
+only be a number literal.
+
+The end of the range can be a number, or a asterisk C<*>, which means
+"whatever", or Inf. This syntax is stolen from Perl6.
+
+After the end of range, it optionally take a C<:by(N)> modifier, where
+N can be a number literal. This syntax is also stolen from Perl6.
+
+Therefore, this is how you represent all odd numbers:
+
+    my $odd = 1..*:by(2);
+
+
 =head1 METHODS
 
 =over 4
@@ -199,6 +213,10 @@ Retrieve the maximum value of the range.
 
 Iterate over the range one by one, the C<$cb> should be a code
 ref. Inside the body of that, C<$_> refers to the current value.
+
+If you want to stop before it reach the end of the range, or you have
+to because the range is infinite, you need to say C<return 0>. A
+defined false value from C<$cb> will make the iteration stop.
 
 =back
 
