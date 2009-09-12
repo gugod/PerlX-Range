@@ -59,6 +59,11 @@ sub import {
 }
 
 use overload
+    '@{}' => sub {
+        my $self = shift;
+        my @a = $self->to_a;
+        return \@a;
+    },
     '+' => sub {
         my $self = shift;
         $self->{first} = $_[0];
@@ -88,6 +93,13 @@ sub last {
 
 *min = *from = \&first;
 *max = *to   = \&last;
+
+sub to_a {
+    my $self = shift;
+    my @r = ();
+    $self->each(sub { push @r, $_ });
+    return @r;
+}
 
 sub each {
     my $cb = pop;
