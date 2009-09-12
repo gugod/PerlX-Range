@@ -51,10 +51,8 @@ sub __const_check {
         }
         elsif ($end_content eq '*:') {
             my $selector = $end->snext_sibling;
-            say "XXX: $selector";
             if ($selector->content eq 'by') {
                 my $selector_arg = $selector->snext_sibling;
-                say "XXX: $selector_arg";
             }
             else {
                 die("Unknown Range syntax: $selector");
