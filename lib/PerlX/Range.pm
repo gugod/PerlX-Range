@@ -28,6 +28,7 @@ sub __const_check {
     );
     return unless $found;
 
+    my $obj_arguments = {};
     my $original_code = $code;
     $code = "";
     for my $op_range (@$found) {
@@ -44,9 +45,45 @@ sub __const_check {
         }
 
         my $end_content = $end->content;
-        $end_content = '"*"' if $end_content eq '*';
 
-        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new(last => $end_content)";
+        if ($end_content eq '*') {
+            $end_content = '"*"';
+        }
+        elsif ($end_content eq '*:') {
+            my $selector = $end->snext_sibling;
+            say "XXX: $selector";
+            if ($selector->content eq 'by') {
+                my $selector_arg = $selector->snext_sibling;
+                say "XXX: $selector_arg";
+            }
+            else {
+                die("Unknown Range syntax: $selector");
+            }
+            $end_content = '"*"';
+        }
+        else {
+            my $colon = $end->snext_sibling;
+            if ($colon->content eq ':') {
+                my $selector = $colon->snext_sibling;
+                if ($selector && $selector->content eq 'by') {
+                    my $selector_arg = $selector->snext_sibling;
+                    if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
+                        $obj_arguments->{by} = $1;
+                    }
+                }
+                else {
+                    die("Unknown Range syntax: $selector");
+                }
+            }
+        }
+
+        $obj_arguments->{last} = $end_content;
+
+        my $argument_string = "";
+        for (keys %$obj_arguments) {
+            $argument_string .= "$_ => " . $obj_arguments->{$_} . ", ";
+        }
+        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new($argument_string)";
     }
 
     substr($linestr, $offset, length($original_code) - 2 ) = $code;
@@ -113,7 +150,7 @@ sub each {
         local $_ = $current;
         my $ret = $cb->($self, $_);
         last if (defined($ret) && !$ret);
-        $current++;
+        $current += $self->{by} ? $self->{by} : 1;
     }
 }
 
