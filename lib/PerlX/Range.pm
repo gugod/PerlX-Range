@@ -53,6 +53,9 @@ sub __const_check {
             my $selector = $end->snext_sibling;
             if ($selector->content eq 'by') {
                 my $selector_arg = $selector->snext_sibling;
+                if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
+                    $obj_arguments->{by} = $1;
+                }
             }
             else {
                 die("Unknown Range syntax: $selector");
