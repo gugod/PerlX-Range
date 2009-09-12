@@ -1,5 +1,9 @@
 Revision history for Perl extension PerlX::Range
 
+0.04
+- minor stupiditiy fixes
+- ensure that the syntax '..*:by(2)' works.
+
 0.03
 - add :by() syntax
 - allow * as the end of the range
