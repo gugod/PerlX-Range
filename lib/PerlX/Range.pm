@@ -86,6 +86,9 @@ sub last {
     $_[0]->{last}
 }
 
+*min = *from = \&first;
+*max = *to   = \&last;
+
 sub each {
     my $cb = pop;
     my $self = shift;
