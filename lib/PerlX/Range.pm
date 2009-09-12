@@ -6,98 +6,94 @@ use 5.010;
 
 our $VERSION = '0.04';
 
-use PPI;
-use PPI::Document;
-use Devel::Declare ();
-use B::OPCheck ();
+use B::Hooks::OP::Check;
 
-sub __const_check {
-    my $op = shift;
-    my $offset = Devel::Declare::get_linestr_offset;
-    $offset += Devel::Declare::toke_skipspace($offset);
-    my $linestr = Devel::Declare::get_linestr;
-    my $code = substr($linestr, $offset);
+require XSLoader;
+XSLoader::load('PerlX::Range', $VERSION);
 
-    my $doc = PPI::Document->new(\$code);
-    $doc->index_locations;
-    my $found = $doc->find(
-        sub {
-            my $node = $_[1];
-            $node->content eq '..' && $node->class eq 'PPI::Token::Operator';
-        }
-    );
-    return unless $found;
+# use PPI;
+# use PPI::Document;
+# use Devel::Declare ();
+# use B::OPCheck ();
+# sub __const_check {
+#     my $op = shift;
+#     my $offset = Devel::Declare::get_linestr_offset;
+#     $offset += Devel::Declare::toke_skipspace($offset);
+#     my $linestr = Devel::Declare::get_linestr;
+#     my $code = substr($linestr, $offset);
 
-    my $obj_arguments = {};
-    my $original_code = $code;
-    $code = "";
-    for my $op_range (@$found) {
-        my $start = $op_range->sprevious_sibling;
-        my $end = $op_range->snext_sibling;
+#     my $doc = PPI::Document->new(\$code);
+#     $doc->index_locations;
+#     my $found = $doc->find(
+#         sub {
+#             my $node = $_[1];
+#             $node->content eq '..' && $node->class eq 'PPI::Token::Operator';
+#         }
+#     );
+#     return unless $found;
 
-        my $pnode = $op_range->sprevious_sibling;
-        while($pnode) {
-            my $prev_node = $pnode;
-            while ($prev_node = $prev_node->previous_sibling) {
-                $code = $prev_node->content . $code;
-            }
-            $pnode = $pnode->parent;
-        }
+#     my $obj_arguments = {};
+#     my $original_code = $code;
+#     $code = "";
+#     for my $op_range (@$found) {
+#         my $start = $op_range->sprevious_sibling;
+#         my $end = $op_range->snext_sibling;
 
-        my $end_content = $end->content;
+#         my $pnode = $op_range->sprevious_sibling;
+#         while($pnode) {
+#             my $prev_node = $pnode;
+#             while ($prev_node = $prev_node->previous_sibling) {
+#                 $code = $prev_node->content . $code;
+#             }
+#             $pnode = $pnode->parent;
+#         }
 
-        if ($end_content eq '*') {
-            $end_content = '"*"';
-        }
-        elsif ($end_content eq '*:') {
-            my $selector = $end->snext_sibling;
-            if ($selector->content eq 'by') {
-                my $selector_arg = $selector->snext_sibling;
-                if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
-                    $obj_arguments->{by} = $1;
-                }
-            }
-            else {
-                die("Unknown Range syntax: $selector");
-            }
-            $end_content = '"*"';
-        }
-        else {
-            my $colon = $end->snext_sibling;
-            if ($colon->content eq ':') {
-                my $selector = $colon->snext_sibling;
-                if ($selector && $selector->content eq 'by') {
-                    my $selector_arg = $selector->snext_sibling;
-                    if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
-                        $obj_arguments->{by} = $1;
-                    }
-                }
-                else {
-                    die("Unknown Range syntax: $selector");
-                }
-            }
-        }
+#         my $end_content = $end->content;
 
-        $obj_arguments->{last} = $end_content;
+#         if ($end_content eq '*') {
+#             $end_content = '"*"';
+#         }
+#         elsif ($end_content eq '*:') {
+#             my $selector = $end->snext_sibling;
+#             if ($selector->content eq 'by') {
+#                 my $selector_arg = $selector->snext_sibling;
+#                 if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
+#                     $obj_arguments->{by} = $1;
+#                 }
+#             }
+#             else {
+#                 die("Unknown Range syntax: $selector");
+#             }
+#             $end_content = '"*"';
+#         }
+#         else {
+#             my $colon = $end->snext_sibling;
+#             if ($colon->content eq ':') {
+#                 my $selector = $colon->snext_sibling;
+#                 if ($selector && $selector->content eq 'by') {
+#                     my $selector_arg = $selector->snext_sibling;
+#                     if ($selector_arg && "$selector_arg" =~ /\((\d+)\)/) {
+#                         $obj_arguments->{by} = $1;
+#                     }
+#                 }
+#                 else {
+#                     die("Unknown Range syntax: $selector");
+#                 }
+#             }
+#         }
 
-        my $argument_string = "";
-        for (keys %$obj_arguments) {
-            $argument_string .= "$_ => " . $obj_arguments->{$_} . ", ";
-        }
-        $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new($argument_string)";
-    }
+#         $obj_arguments->{last} = $end_content;
 
-    substr($linestr, $offset, length($original_code) - 2 ) = $code;
-    Devel::Declare::set_linestr($linestr);
-};
+#         my $argument_string = "";
+#         for (keys %$obj_arguments) {
+#             $argument_string .= "$_ => " . $obj_arguments->{$_} . ", ";
+#         }
+#         $code .= ($start ? $start->content : "") . "+" . "PerlX::Range->new($argument_string)";
+#     }
 
-sub import {
-    my $offset  = Devel::Declare::get_linestr_offset();
-    my $linestr = Devel::Declare::get_linestr();
-
-    substr($linestr, $offset, 0) = q[BEGIN { B::OPCheck->import($_ => check => \&PerlX::Range::__const_check) for qw(const); }];
-    Devel::Declare::set_linestr($linestr);
-}
+#     substr($linestr, $offset, length($original_code) - 2 ) = $code;
+#     Devel::Declare::set_linestr($linestr);
+# };
 
 use overload
     '@{}' => sub {
