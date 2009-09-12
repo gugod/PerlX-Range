@@ -112,15 +112,47 @@ __END__
 
 =head1 NAME
 
-PerlX::Range -
+PerlX::Range - Lazy Range object in Perl 5
 
 =head1 SYNOPSIS
 
+  use PerlX::MethodCallWithBlock;
   use PerlX::Range;
+
+  my $a = 1..5000;
+
+  $a->each {
+      # $_ is the current value
+
+      return 0 if should_break($_);
+  };
 
 =head1 DESCRIPTION
 
-PerlX::Range is
+PerlX::Range is an attemp to implement make range operator lazy. When you say:
+
+    my $a = 1..10;
+
+This `$a` variable is then now a C<PerlX::Range> object.
+
+=head1 METHODS
+
+=over 4
+
+=item min, from, first
+
+Retrieve the minimum value of the range.
+
+=item max, to, last
+
+Retrieve the maximum value of the range.
+
+=item each($cb)
+
+Iterate over the range one by one, the C<$cb> should be a code
+ref. Inside the body of that, C<$_> refers to the current value.
+
+=back
 
 =head1 AUTHOR
 
