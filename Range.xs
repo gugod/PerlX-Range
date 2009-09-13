@@ -10,19 +10,21 @@
 
 STATIC OP *
 range_replace(pTHX_ OP *op, void *user_data) {
-  UNOP *entersub_op;
-  LISTOP *entersub_args = NULL;
-  SVOP *min_const_op;
-  SVOP *max_const_op;
   GV *xrange;
-  UNOP *xrange_op;
+  UNOP *entersub_op, *xrange_op;
+  SVOP *min_const_op, *max_const_op;
   SV *min_val, *max_val;
+  LISTOP *entersub_args = NULL;
 
   if ( cUNOPx(op)->op_first->op_type != OP_FLIP) return op;
   if ( cUNOPx(cUNOPx(op)->op_first)->op_first->op_type != OP_RANGE ) return op;
 
-  min_val = newSVsv(cSVOPx(cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)->op_first)->op_sv);
-  max_val = newSVsv(cSVOPx(cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)->op_other)->op_sv);
+#define ORIGINAL_RANGE_OP cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)
+
+  min_val = newSVsv(cSVOPx( ORIGINAL_RANGE_OP->op_first )->op_sv);
+  max_val = newSVsv(cSVOPx( ORIGINAL_RANGE_OP->op_other )->op_sv);
+
+#undef ORIGINAL_RANGE_OP
 
   min_const_op = newSVOP(OP_CONST, 0, min_val);
   max_const_op = newSVOP(OP_CONST, 0, max_val);
