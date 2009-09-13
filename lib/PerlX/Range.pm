@@ -8,9 +8,6 @@ our $VERSION = '0.04';
 
 use B::Hooks::OP::Check;
 
-require XSLoader;
-XSLoader::load('PerlX::Range', $VERSION);
-
 # use PPI;
 # use PPI::Document;
 # use Devel::Declare ();
@@ -116,6 +113,12 @@ sub new {
     return bless {%args}, $class;
 }
 
+sub xrange {
+    my ($first, $last) = @_;
+    print "xrange: $first, $last\n";
+    return __PACKAGE__->new(first => $first, last => $last);
+}
+
 sub items {
     $_[0]->{last} - $_[0]->{first} + 1
 }
@@ -151,6 +154,8 @@ sub each {
     }
 }
 
+require XSLoader;
+XSLoader::load('PerlX::Range', $VERSION);
 
 1;
 __END__
