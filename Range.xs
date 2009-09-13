@@ -26,19 +26,19 @@ range_replace(pTHX_ OP *op, void *user_data) {
 
 #undef ORIGINAL_RANGE_OP
 
-  min_const_op = newSVOP(OP_CONST, 0, min_val);
-  max_const_op = newSVOP(OP_CONST, 0, max_val);
+  min_const_op = (SVOP*)newSVOP(OP_CONST, 0, min_val);
+  max_const_op = (SVOP*)newSVOP(OP_CONST, 0, max_val);
 
   xrange = gv_fetchpvs("PerlX::Range::xrange", 1, SVt_PVCV);
 
-  xrange_op = scalar(newUNOP(OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange)));
+  xrange_op = (UNOP*)scalar(newUNOP(OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange)));
 
-  entersub_args = append_elem(OP_LIST, entersub_args, min_const_op);
-  entersub_args = append_elem(OP_LIST, entersub_args, max_const_op);
-  entersub_args = append_elem(OP_LIST, entersub_args, xrange_op);
+  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)min_const_op);
+  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)max_const_op);
+  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)xrange_op);
 
-  entersub_op   = newUNOP(OP_ENTERSUB, OPf_STACKED, min_const_op);
-  return entersub_op;
+  entersub_op   = (UNOP*)newUNOP(OP_ENTERSUB, OPf_STACKED, (OP*)min_const_op);
+  return (OP*)entersub_op;
 }
 
 MODULE = PerlX::Range		PACKAGE = PerlX::Range
@@ -49,6 +49,3 @@ void
 _import(SV *args)
 CODE:
     hook_op_check(OP_FLOP, range_replace, NULL);
-
-
-
