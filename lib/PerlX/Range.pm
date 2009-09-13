@@ -3,6 +3,7 @@ package PerlX::Range;
 use strict;
 use warnings;
 use 5.010;
+use B::Hooks::OP::Check;
 
 our $VERSION = '0.04';
 
@@ -80,8 +81,14 @@ sub next {
     return $self->{current}-1;
 }
 
+
 require XSLoader;
 XSLoader::load('PerlX::Range', $VERSION);
+
+sub import {
+    feature->import(':5.10');
+    &_import;
+}
 
 1;
 __END__

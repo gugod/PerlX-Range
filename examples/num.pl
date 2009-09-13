@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use 5.010;
+# use 5.010;
 use PerlX::Range;
 
-my $a= 1..100:by(4);
+my $a= 1..100;
 
 # should only print 1, 5, 9
 $a->each(

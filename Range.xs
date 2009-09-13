@@ -46,6 +46,9 @@ MODULE = PerlX::Range		PACKAGE = PerlX::Range
 PROTOTYPES: DISABLE
 
 void
-import(SV *args)
+_import(SV *args)
 CODE:
     hook_op_check(OP_FLOP, range_replace, NULL);
+
+
+
