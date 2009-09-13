@@ -27,6 +27,7 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {%args}, $class;
     $self->{current} = $self->min;
+    $self->{by} = 1;
     return $self;
 }
 
@@ -55,6 +56,12 @@ sub to_a {
     my @r = ();
     $self->each(sub { push @r, $_ });
     return @r;
+}
+
+sub by {
+    my ($self, $n) = @_;
+    $self->{by} = $n if $n;
+    return $self;
 }
 
 sub each {
