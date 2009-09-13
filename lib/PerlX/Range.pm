@@ -115,7 +115,6 @@ sub new {
 
 sub xrange {
     my ($first, $last) = @_;
-    print "xrange: $first, $last\n";
     return __PACKAGE__->new(first => $first, last => $last);
 }
 

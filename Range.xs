@@ -16,10 +16,17 @@ range_replace(pTHX_ OP *op, void *user_data) {
   SVOP *max_const_op;
   GV *xrange;
   UNOP *xrange_op;
+  I32 min_val;
+  I32 max_val;
 
-  // PerlX::Range::xrange(1..42)
-  min_const_op = newSVOP(OP_CONST, 0, newSViv(1));
-  max_const_op = newSVOP(OP_CONST, 0, newSViv(42));
+  if ( cUNOPx(op)->op_first->op_type != OP_FLIP) return op;
+  if ( cUNOPx(cUNOPx(op)->op_first)->op_first->op_type != OP_RANGE ) return op;
+
+  min_val = SvIV(cSVOPx(cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)->op_first)->op_sv);
+  max_val = SvIV(cSVOPx(cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)->op_other)->op_sv);
+
+  min_const_op = newSVOP(OP_CONST, 0, newSViv(min_val));
+  max_const_op = newSVOP(OP_CONST, 0, newSViv(max_val));
 
   xrange = gv_fetchpvs("PerlX::Range::xrange", 1, SVt_PVCV);
 
