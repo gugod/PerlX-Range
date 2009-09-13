@@ -110,7 +110,9 @@ use overload
 
 sub new {
     my ($class, %args) = @_;
-    return bless {%args}, $class;
+    my $self = bless {%args}, $class;
+    $self->{current} = $self->min;
+    return $self;
 }
 
 sub xrange {
@@ -151,6 +153,17 @@ sub each {
         last if (defined($ret) && !$ret);
         $current += $self->{by} ? $self->{by} : 1;
     }
+}
+
+sub next {
+    my $self = shift;
+
+    if ($self->{current} > $self->max) {
+        $self->{current} = $self->min;
+        return;
+    }
+    $self->{current} += 1;
+    return $self->{current}-1;
 }
 
 require XSLoader;
