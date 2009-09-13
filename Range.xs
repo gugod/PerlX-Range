@@ -11,7 +11,7 @@
 STATIC OP *
 range_replace(pTHX_ OP *op, void *user_data) {
   UNOP *entersub_op;
-  LISTOP *entersub_args;
+  LISTOP *entersub_args = NULL;
   SVOP *min_const_op;
   SVOP *max_const_op;
   GV *xrange;
