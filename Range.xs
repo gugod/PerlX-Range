@@ -16,8 +16,16 @@ range_replace(pTHX_ OP *op, void *user_data) {
   SV *min_val, *max_val;
   LISTOP *entersub_args = NULL;
 
+  HV *table = GvHV(PL_hintgv);
+  SV **svp;
+
   if ( cUNOPx(op)->op_first->op_type != OP_FLIP) return op;
   if ( cUNOPx(cUNOPx(op)->op_first)->op_first->op_type != OP_RANGE ) return op;
+
+  if (!(table && (svp = hv_fetch(table, "PerlXRange", 10, FALSE)) && *svp && SvOK(*svp))) {
+    return op;
+  }
+
 
 #define ORIGINAL_RANGE_OP cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)
 
@@ -41,6 +49,8 @@ range_replace(pTHX_ OP *op, void *user_data) {
   return (OP*)entersub_op;
 }
 
+STATIC hook_op_check_id perlx_range_flop_hook_id = 0;
+
 MODULE = PerlX::Range		PACKAGE = PerlX::Range
 
 PROTOTYPES: DISABLE
@@ -48,4 +58,9 @@ PROTOTYPES: DISABLE
 void
 _import(SV *args)
 CODE:
-    hook_op_check(OP_FLOP, range_replace, NULL);
+    perlx_range_flop_hook_id = hook_op_check(OP_FLOP, range_replace, NULL);
+
+void
+_remove_flop_hook();
+CODE:
+    hook_op_check_remove(OP_FLOP, perlx_range_flop_hook_id);
