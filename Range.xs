@@ -16,16 +16,14 @@ range_replace(pTHX_ OP *op, void *user_data) {
   SV *min_val, *max_val;
   LISTOP *entersub_args = NULL;
 
-  HV *table = GvHV(PL_hintgv);
-  SV **svp;
+  HV * const hinthv = GvHV(PL_hintgv);
 
   if ( cUNOPx(op)->op_first->op_type != OP_FLIP) return op;
   if ( cUNOPx(cUNOPx(op)->op_first)->op_first->op_type != OP_RANGE ) return op;
 
-  if (!(table && (svp = hv_fetch(table, "PerlXRange", 10, FALSE)) && *svp && SvOK(*svp))) {
+  if (!(hinthv && hv_exists(hinthv, "PerlXRange", 10))) {
     return op;
   }
-
 
 #define ORIGINAL_RANGE_OP cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)
 
