@@ -98,20 +98,19 @@ sub import {
 
     return if ($^H{PerlXRange});
 
+    $^H |= 0x00020000; # HINT_LOCALIZE_HH
+
     $^H{PerlXRange} = 1;
 
-    &_import;
-    my $sg = Scope::Guard->new(
-        sub {
-            _remove_flop_hook();
-        }
-    );
+    add_flop_hook();
+    my $sg = Scope::Guard->new(sub {
+                                   $^H &= ~0x00020000;
+                                   remove_flop_hook()
+                               });
     $^H{PerlXRange_leave} = $sg;
 }
 
 sub unimport {
-    return unless $^H{PerlXRange};
-
     delete $^H{PerlXRange};
     delete $^H{PerlXRange_leave};
 }
