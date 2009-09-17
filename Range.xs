@@ -21,6 +21,8 @@ range_replace(pTHX_ OP *op, void *user_data) {
     return op;
   }
 
+  // Range.pm should properly set $^H{PerlXRange} to 1 to toggle the
+  // effectiveness of PerlX::Range
   if (!hv_exists(GvHV(PL_hintgv), "PerlXRange", 10)) {
     return op;
   }
