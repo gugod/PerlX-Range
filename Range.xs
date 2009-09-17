@@ -3,26 +3,39 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
 #include "ppport.h"
-
 #include "hook_op_check.h"
+
+STATIC void
+op_clone(pTHX_ OP *old_op, SVOP **new_op) {
+  switch(old_op->op_type) {
+  case OP_CONST:
+    *new_op = (SVOP*)newSVOP(OP_CONST, (old_op)->op_flags, newSVsv(cSVOPx(old_op)->op_sv ));
+    break;
+
+  case OP_PADSV:
+    *new_op = (SVOP*)newOP(OP_PADSV, old_op->op_flags);
+    (*new_op)->op_targ = old_op->op_targ;
+    break;
+  }
+}
 
 STATIC OP *
 range_replace(pTHX_ OP *op, void *user_data) {
   GV *xrange;
   UNOP *entersub_op, *xrange_op;
-  SVOP *min_const_op, *max_const_op;
-  SV *min_val, *max_val;
+  SVOP *min_op, *max_op;
   LISTOP *entersub_args = NULL;
 
-  // Make sure that the %^H is localized
+  /* Make sure that the %^H is localized */
   if ((PL_hints & 0x00020000) != 0x00020000) {
     return op;
   }
 
-  // Range.pm should properly set $^H{PerlXRange} to 1 to toggle the
-  // effectiveness of PerlX::Range
+  /*
+    Range.pm should properly set $^H{PerlXRange} to 1 to toggle the
+    effectiveness of PerlX::Range
+  */
   if (!hv_exists(GvHV(PL_hintgv), "PerlXRange", 10)) {
     return op;
   }
@@ -32,23 +45,20 @@ range_replace(pTHX_ OP *op, void *user_data) {
 
 #define ORIGINAL_RANGE_OP cLOGOPx(cUNOPx(cUNOPx(op)->op_first)->op_first)
 
-  min_val = newSVsv(cSVOPx( ORIGINAL_RANGE_OP->op_first )->op_sv);
-  max_val = newSVsv(cSVOPx( ORIGINAL_RANGE_OP->op_other )->op_sv);
+  op_clone(aTHX_ (OP*)(ORIGINAL_RANGE_OP->op_first), &min_op);
+  op_clone(aTHX_ (OP*)(ORIGINAL_RANGE_OP->op_other), &max_op);
 
 #undef ORIGINAL_RANGE_OP
-
-  min_const_op = (SVOP*)newSVOP(OP_CONST, 0, min_val);
-  max_const_op = (SVOP*)newSVOP(OP_CONST, 0, max_val);
 
   xrange = gv_fetchpvs("PerlX::Range::xrange", 1, SVt_PVCV);
 
   xrange_op = (UNOP*)scalar(newUNOP(OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange)));
 
-  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)min_const_op);
-  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)max_const_op);
+  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)min_op);
+  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)max_op);
   entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)xrange_op);
 
-  entersub_op   = (UNOP*)newUNOP(OP_ENTERSUB, OPf_STACKED, (OP*)min_const_op);
+  entersub_op   = (UNOP*)newUNOP(OP_ENTERSUB, OPf_STACKED, (OP*)min_op);
   return (OP*)entersub_op;
 }
 
