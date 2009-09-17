@@ -1,8 +1,7 @@
-#define PERL_CORE
-
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+
 #include "ppport.h"
 #include "hook_op_check.h"
 
@@ -52,13 +51,13 @@ range_replace(pTHX_ OP *op, void *user_data) {
 
   xrange = gv_fetchpvs("PerlX::Range::xrange", 1, SVt_PVCV);
 
-  xrange_op = (UNOP*)scalar(newUNOP(OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange)));
+  xrange_op = (UNOP*)Perl_newUNOP(aTHX_ OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange));
 
-  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)min_op);
-  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)max_op);
-  entersub_args = (LISTOP*)append_elem(OP_LIST, (OP*)entersub_args, (OP*)xrange_op);
+  entersub_args = (LISTOP*)Perl_append_elem(aTHX_ OP_LIST, (OP*)entersub_args, (OP*)min_op);
+  entersub_args = (LISTOP*)Perl_append_elem(aTHX_ OP_LIST, (OP*)entersub_args, (OP*)max_op);
+  entersub_args = (LISTOP*)Perl_append_elem(aTHX_ OP_LIST, (OP*)entersub_args, (OP*)xrange_op);
 
-  entersub_op   = (UNOP*)newUNOP(OP_ENTERSUB, OPf_STACKED, (OP*)min_op);
+  entersub_op   = (UNOP*)Perl_newUNOP(aTHX_ OP_ENTERSUB, OPf_STACKED, (OP*)min_op);
   return (OP*)entersub_op;
 }
 
