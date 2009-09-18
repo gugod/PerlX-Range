@@ -6,7 +6,7 @@ use 5.010;
 use B::Hooks::OP::Check;
 use B::Hooks::EndOfScope;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use overload
     '@{}' => sub {
