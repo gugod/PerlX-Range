@@ -38,7 +38,9 @@ sub xrange {
 }
 
 sub items {
-    $_[0]->{last} - $_[0]->{first} + 1
+    my $self = shift;
+    use integer;
+    return ($self->{last} - $self->{first})/($self->{by}) + 1
 }
 
 sub first {
