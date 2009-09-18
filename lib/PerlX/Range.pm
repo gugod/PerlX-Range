@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.010;
 use B::Hooks::OP::Check;
+use B::Hooks::EndOfScope;
 use Scope::Guard;
 
 our $VERSION = '0.04';
@@ -89,31 +90,28 @@ sub next {
     return $self->{current}-1;
 }
 
-
 require XSLoader;
 XSLoader::load('PerlX::Range', $VERSION);
 
 sub import {
+    return if $^H{PerlXRange};
+
     feature->import(':5.10');
-
-    return if ($^H{PerlXRange});
-
-    $^H |= 0x00020000; # HINT_LOCALIZE_HH
-
+    $^H &= 0x00020000;
     $^H{PerlXRange} = 1;
 
     add_flop_hook();
-    my $sg = Scope::Guard->new(sub {
-                                   $^H &= ~0x00020000;
-                                   remove_flop_hook()
-                               });
-    $^H{PerlXRange_leave} = $sg;
+    on_scope_end {
+        remove_flop_hook();
+    };
 }
 
 sub unimport {
+    remove_flop_hook();
+    $^H &= ~0x00020000;
     delete $^H{PerlXRange};
-    delete $^H{PerlXRange_leave};
 }
+
 
 1;
 __END__

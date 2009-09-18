@@ -6,7 +6,7 @@ use ExtUtils::Depends;
 name 'PerlX-Range';
 all_from 'lib/PerlX/Range.pm';
 
-# requires '';
+requires 'B::Hooks::EndOfScope';
 
 tests 't/*.t';
 author_tests 'xt';
