@@ -16,6 +16,34 @@ op_clone(pTHX_ OP *old_op, SVOP **new_op) {
     *new_op = (SVOP*)newOP(OP_PADSV, old_op->op_flags);
     (*new_op)->op_targ = old_op->op_targ;
     break;
+
+  case OP_RV2SV:
+    /*
+     * This case happens when the range is given like: $a..10, where $a is a global variable.
+     * The node is an RV2SV with one GV child.
+     *
+     * Should probably check if old_op is really the op_first of its' parent node.
+     *
+     * This case does not happend to the op_other node.
+     */
+    if (cUNOPx(old_op)->op_first
+        && cUNOPx(old_op)->op_first->op_type == OP_GV) {
+
+      old_op = cUNOPx(old_op)->op_first;
+
+      if (old_op->op_flags & OPf_WANT_SCALAR) {
+        *new_op = (SVOP*)Perl_newOP(aTHX_ OP_GVSV, old_op->op_flags);
+        cPADOPx(*new_op)->op_padix = cPADOPx(old_op)->op_padix;
+      }
+    }
+    break;
+
+  case OP_GV:
+    if (old_op->op_flags & OPf_WANT_SCALAR) {
+      *new_op = (SVOP*)Perl_newOP(aTHX_ OP_GVSV, old_op->op_flags);
+      cPADOPx(*new_op)->op_padix = cPADOPx(old_op)->op_padix;
+    }
+    break;
   }
 }
 
