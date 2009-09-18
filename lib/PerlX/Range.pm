@@ -14,11 +14,6 @@ use overload
         my @a = $self->to_a;
         return \@a;
     },
-    '+' => sub {
-        my $self = shift;
-        $self->{first} = $_[0];
-        return $self;
-    },
     '""' => sub {
         my $self = shift;
         return $self->{first} . ".." . $self->{last};
