@@ -137,19 +137,37 @@ PerlX::Range is an attemp to implement make range operator lazy. When you say:
 
 This `$a` variable is then now a C<PerlX::Range> object.
 
+Notice here that it's `$a` but not `@a`. C<PerlX::Range> overrides the
+behavior of `..` operator to construct one C<PerlX::Range> object. You
+can deparse it to see what it's changed to:
+
+    > perl -MPerlX::Range -MO=Deparse -e '$a=1..3'
+    BEGIN {
+        $^H{'feature_say'} = q(1);
+        $^H{'feature_state'} = q(1);
+        $^H{'feature_switch'} = q(1);
+        $^H{'PerlXRange'} = q(1);
+    }
+    $a = PerlX::Range::xrange(1, 3);
+    -e syntax OK
+
+It also enables those 5.10 features for its caller, for the love of
+them.
+
 At this point the begin of range can only be a constant, and better
 only be a number literal.
 
-The end of the range can be a number, or a asterisk C<*>, which means
-"whatever", or Inf. This syntax is stolen from Perl6.
+At this point the min/max value of range are assumed to be numeric
+literals or variables.
 
-After the end of range, it optionally take a C<:by(N)> modifier, where
-N can be a number literal. This syntax is also stolen from Perl6.
+=head1 THE SYNTAX
 
-Therefore, this is how you represent all odd numbers:
-
-    my $odd = 1..*:by(2);
-
+The 0.04 version of C<PerlX::Range> added the syntax of using C<*> and
+C<:by(x)> like Perl6, however, they are temporarily removed in the
+current version due to a total re-write of C<PerlX::Range> with
+XS. The XS based implementation should work less problematic and
+robust. However, it's more difficult to extend syntax with pure XS.  I
+still suck at XS, so github pull requests are very welcome. :)
 
 =head1 METHODS
 
@@ -172,13 +190,26 @@ If you want to stop before it reach the end of the range, or you have
 to because the range is infinite, you need to say C<return 0>. A
 defined false value from C<$cb> will make the iteration stop.
 
+=item by($x)
+
+Specify the step distance. So Here's how you define some odd numbers:
+
+    # 1, 3, 5, 7, 9
+    my $a = 1..10;
+    $a->by(2);
+
+Or, in one line:
+
+    my $a = (1..10)->by(2);
+
+Due to the fact that C<< -> >> operator is tighter then C<..>,
+C<1..10> needs to be written in a pair of parens.
+
 =back
 
 =head1 AUTHOR
 
 Kang-min Liu E<lt>gugod@gugod.orgE<gt>
-
-=head1 SEE ALSO
 
 =head1 LICENSE AND COPYRIGHT
 
