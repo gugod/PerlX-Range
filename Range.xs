@@ -54,18 +54,13 @@ range_replace(pTHX_ OP *op, void *user_data) {
   SVOP *min_op, *max_op;
   LISTOP *entersub_args = NULL;
 
-  /* Make sure that the %^H is localized */
-  if ((PL_hints & 0x00020000) != 0x00020000) {
-    return op;
-  }
-
-  /*
-    Range.pm should properly set $^H{PerlXRange} to 1 to toggle the
-    effectiveness of PerlX::Range
+  /* Make sure that the %^H is localized, and $^H{PerlXRange} is set.
+   *
+   * Range.pm should properly set $^H{PerlXRange} to 1 to toggle the
+   * effectiveness of PerlX::Range.
   */
-  if (!hv_exists(GvHV(PL_hintgv), "PerlXRange", 10)) {
-    return op;
-  }
+  if ((PL_hints & 0x00020000) != 0x00020000) return op;
+  if (!hv_exists(GvHV(PL_hintgv), "PerlXRange", 10)) return op;
 
   if ( cUNOPx(op)->op_first->op_type != OP_FLIP) return op;
   if ( cUNOPx(cUNOPx(op)->op_first)->op_first->op_type != OP_RANGE ) return op;
@@ -79,7 +74,7 @@ range_replace(pTHX_ OP *op, void *user_data) {
 
   xrange = gv_fetchpvs("PerlX::Range::xrange", 1, SVt_PVCV);
 
-  xrange_op = (UNOP*)Perl_newUNOP(aTHX_ OP_RV2CV, 0, newGVOP(OP_GV, 0, xrange));
+  xrange_op = (UNOP*)Perl_newUNOP(aTHX_ OP_RV2CV, OPf_PARENS, newGVOP(OP_GV, 0, xrange));
 
   entersub_args = (LISTOP*)Perl_append_elem(aTHX_ OP_LIST, (OP*)entersub_args, (OP*)min_op);
   entersub_args = (LISTOP*)Perl_append_elem(aTHX_ OP_LIST, (OP*)entersub_args, (OP*)max_op);
