@@ -3,8 +3,15 @@ use strict;
 use warnings;
 use 5.010;
 use Test::More;
+BEGIN {
+    eval "use PerlX::MethodCallWithBlock;";
+    if ($@) {
+        plan( skip_all => 'no PerlX::MethodCallWithBlock' );
+        exit(0);
+    }
+}
 use PerlX::Range;
-use PerlX::MethodCallWithBlock;
+
 
 my $a = 1..1000;
 
