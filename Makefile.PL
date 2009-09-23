@@ -17,6 +17,8 @@ requires 'B::Hooks::OP::Check' => '0.18';
 tests 't/*.t';
 author_tests 'xt';
 
+repository 'http://github.com/gugod/PerlX-Range';
+
 build_requires 'Test::More' => 0.88;
 auto_include;
 
