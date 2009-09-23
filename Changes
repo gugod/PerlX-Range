@@ -1,5 +1,7 @@
 Revision history for Perl extension PerlX::Range
 
+- deps fixed (Alexandr Ciornii)
+
 0.05
 - re-write it with XS
 - make it file scoped like strict pragma

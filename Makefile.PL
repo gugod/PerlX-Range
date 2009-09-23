@@ -7,6 +7,10 @@ use ExtUtils::Depends;
 name 'PerlX-Range';
 all_from 'lib/PerlX/Range.pm';
 
+configure_requires 'ExtUtils::Depends' => '0.302'; #minimum version that works on Win32+gcc
+configure_requires 'B::Hooks::OP::Check' => '0.18';
+#minimum version that depends on ExtUtils::Depends 0.302
+
 requires 'B::Hooks::EndOfScope';
 requires 'B::Hooks::OP::Check' => '0.18';
 
