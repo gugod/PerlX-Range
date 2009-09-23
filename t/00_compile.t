@@ -3,7 +3,7 @@ use warnings;
 use 5.010;
 use PerlX::Range;
 
-use Test::More;
+use Test::More 0.88;
 
 diag "compile.t";
 pass;

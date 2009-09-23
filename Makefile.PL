@@ -8,11 +8,12 @@ name 'PerlX-Range';
 all_from 'lib/PerlX/Range.pm';
 
 requires 'B::Hooks::EndOfScope';
+requires 'B::Hooks::OP::Check' => '0.18';
 
 tests 't/*.t';
 author_tests 'xt';
 
-build_requires 'Test::More';
+build_requires 'Test::More' => 0.88;
 auto_include;
 
 my $pkg = ExtUtils::Depends->new('PerlX::Range', 'B::Hooks::OP::Check');
