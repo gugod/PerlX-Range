@@ -1,3 +1,4 @@
+use 5.010; #because of use warnings
 use warnings;
 use inc::Module::Install;
 
