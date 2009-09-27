@@ -6,7 +6,11 @@ use ExtUtils::Depends;
 name 'PerlX-Range';
 all_from 'lib/PerlX/Range.pm';
 
+configure_requires 'ExtUtils::Depends', '0.302';
+configure_requires 'B::Hooks::OP::Check', '0.18';
+
 requires 'B::Hooks::EndOfScope';
+requires 'B::Hooks::OP::Check';
 
 tests 't/*.t';
 author_tests 'xt';
