@@ -10,7 +10,6 @@ BEGIN {
 }
 
 use PerlX::Range;
-use PerlX::MethodCallWithBlock;
 
 my $a = 1..1000;
 

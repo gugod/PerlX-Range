@@ -1,3 +1,4 @@
+use 5.010; #because of use warnings
 use warnings;
 use inc::Module::Install;
 
@@ -15,8 +16,10 @@ requires 'B::Hooks::OP::Check';
 tests 't/*.t';
 author_tests 'xt';
 
-build_requires 'Test::More' => '0.88';
-auto_include;
+repository 'http://github.com/gugod/PerlX-Range';
+
+build_requires 'Test::More' => 0.88;
+uto_include;
 
 my $pkg = ExtUtils::Depends->new('PerlX::Range', 'B::Hooks::OP::Check');
 $pkg->add_xs("Range.xs");
