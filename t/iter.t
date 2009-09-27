@@ -3,6 +3,12 @@ use strict;
 use warnings;
 use 5.010;
 use Test::More;
+
+BEGIN {
+    eval 'use PerlX::MethodCallWithBlock';
+    plan skip_all => 'PerlX::MethodCallWithBlock required' if $@;
+}
+
 use PerlX::Range;
 use PerlX::MethodCallWithBlock;
 
