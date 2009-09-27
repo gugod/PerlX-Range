@@ -15,7 +15,7 @@ requires 'B::Hooks::OP::Check';
 tests 't/*.t';
 author_tests 'xt';
 
-build_requires 'Test::More';
+build_requires 'Test::More' => '0.88';
 auto_include;
 
 my $pkg = ExtUtils::Depends->new('PerlX::Range', 'B::Hooks::OP::Check');
